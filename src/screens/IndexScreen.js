@@ -5,8 +5,7 @@ import { Context } from '../context/TodoContext';
 
 const IndexScreen = () => {
     const { state, addTodo } = useContext(Context);
-    console.log('index')
-    console.log('ahajhah')
+
     return (
         <View>
             <Text>IndexScreen  </Text>
