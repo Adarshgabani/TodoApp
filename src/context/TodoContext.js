@@ -1,20 +1,18 @@
 import createDataContext from './createDataContext';
-
+import jsonServer from '../api/jsonServer';
 
 const todoReducer = (state, actions) => {
 
+
     switch (actions.type) {
+        case 'get_todos':
+            return actions.payload
         case 'edit_todo':
             return state.map((todo) => {
                 return todo.id === actions.payload.id ? actions.payload : todo;
 
             })
-        case 'add_todo':
-            return [...state, {
-                id: Math.floor(Math.random() * 99999),
-                title: actions.payload.title,
-                content: actions.payload.content
-            }];
+
         case 'delete_todo':
             return state.filter((todos) => todos.id !== actions.payload);
         default:
@@ -24,9 +22,17 @@ const todoReducer = (state, actions) => {
 };
 
 
+const getTodos = (dispatch) => {
+    return async () => {
+        const response = await jsonServer.get('/todos');
+
+        dispatch({ type: 'get_todos', payload: response.data })
+    };
+};
+
 const addTodo = (dispatch) => {
-    return (title, content, callback) => {
-        dispatch({ type: 'add_todo', payload: { title, content } });
+    return async (title, content, callback) => {
+        const response = await jsonServer.post('/todos', { title, content })
         if (callback) {
             callback();
         }
@@ -34,13 +40,17 @@ const addTodo = (dispatch) => {
 };
 
 const deleteTodo = (dispatch) => {
-    return (id) => {
+    return async (id) => {
+        await jsonServer.delete(`/todos/${id}`)
         dispatch({ type: 'delete_todo', payload: id })
     };
 };
 
 const editTodo = (dispatch) => {
-    return (id, title, content, callback) => {
+
+    return async (id, title, content, callback) => {
+        await jsonServer.put(`/todos/${id}`, { title, content })
+
         dispatch({ type: 'edit_todo', payload: { id, title, content } })
         if (callback) {
             callback();
@@ -50,7 +60,7 @@ const editTodo = (dispatch) => {
 
 export const { Context, Provider } = createDataContext(
     todoReducer,
-    { addTodo, deleteTodo, editTodo },
-    [{ title: "TEST TODO", content: "SOME TEST CONTENT", id: 7 }]
+    { addTodo, deleteTodo, editTodo, getTodos },
+    []
 
 );
